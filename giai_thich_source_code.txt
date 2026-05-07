@@ -1,0 +1,71 @@
+TÀI LIỆU GIẢI THÍCH MÃ NGUỒN VÀ CƠ SỞ DỮ LIỆU
+Dự án: Quản lý Đào tạo (Spring Boot)
+
+1. TỔNG QUAN VỀ DỰ ÁN
+- Đây là một ứng dụng Web API được xây dựng trên nền tảng Java Spring Boot.
+- Cấu trúc thư mục tuân theo mô hình MVC (chủ yếu là Model - Controller - Service - Repository).
+- Web Server tự động chạy qua cổng 8080 (cấu hình trong application.properties).
+
+2. CƠ CHẾ HOẠT ĐỘNG CHUNG
+Ứng dụng hoạt động theo kiến trúc 3 lớp (3-tier architecture):
+- Lớp Controller (Controllers): Tiếp nhận các HTTP Request (GET, POST, PUT, DELETE) từ Client (ví dụ: trình duyệt hoặc các frontend framework như React, Angular), định tuyến dữ liệu, gọi tới lớp Service xử lý nghiệp vụ, và trả về HTTP Response (định dạng JSON).
+- Lớp Service (Services): Chứa các logic nghiệp vụ (business logic). Xử lý dữ liệu trước khi gửi tới lớp DB, hoặc xử lý dữ liệu trước khi trả về Controller.
+- Lớp Repository (Repositories): Kế thừa từ JpaRepository, đóng vai trò giao tiếp trực tiếp với cơ sở dữ liệu (Database). Nó tự động sinh ra các câu query SQL như Create, Read, Update, Delete (CRUD) mà không cần lập trình viên can thiệp hoặc viết tay.
+- Lớp Model (Entities): Chứa các thực thể (Entity) đại diện trực tiếp cho các bảng trong cơ sở dữ liệu. 
+
+3. CHI TIẾT VỀ CƠ SỞ DỮ LIỆU (DATABASE)
+- Hệ quản trị CSDL được sử dụng là: SQL Server (Cấu hình thông qua connection string: `jdbc:sqlserver://localhost:1433;databaseName=schoolmanagerxyz`).
+- Ứng dụng dùng cơ chế Hibernate / JPA với chiến lược `spring.jpa.hibernate.ddl-auto=update` để tự động tạo hoặc cập nhật bảng trong Database mỗi khi code ở lớp Model thay đổi. Code không cần chạy file file .sql thủ công.
+- Các khóa chính (`id`) của các bảng đều sử dụng kiểu `UNIQUEIDENTIFIER` (UUID) và được tự động tạo ngẫu nhiên.
+
+Các bảng (Tables) chính và các cột:
+
+A. Bảng `users` (Tài khoản người dùng)
+- `id` (UUID): Khóa chính
+- `username`: Tên đăng nhập
+- `password`: Mật khẩu
+- `status`: Trạng thái hoạt động (ví dụ: "ACTIVE")
+- Mối quan hệ: Tương tác Many-to-Many với bảng `roles` thông qua bảng trung gian `user_roles`. Khi get thông tin User, Web sẽ tự động join và lấy ra Roles của user đó (EAGER fetch).
+
+B. Bảng `roles` (Vai trò)
+- `id` (UUID): Khóa chính
+- `code`: Mã vai trò (ví dụ: ADMIN, USER)
+- `name`: Tên vai trò
+- Mối quan hệ: Tương tác Many-to-Many với bảng `permissions` thông qua bảng trung gian `role_permissions`.
+
+C. Bảng `permissions` (Quyền hạn chi tiết)
+- `id` (UUID): Khóa chính
+- `code`: Mã quyền
+- `description`: Mô tả chức năng của quyền
+
+D. Bảng `students` (Thông tin Sinh viên)
+- `id` (UUID): Khóa chính
+- `student_id`: Mã số sinh viên (Được ràng buộc Unique - không được trùng lặp, độ dài tối đa 20 ký tự)
+- `name`: Họ và tên sinh viên (tối đa 100 ký tự)
+- `email`: Địa chỉ Email sinh viên (tối đa 100 ký tự)
+
+E. Các Bảng Trung Gian (Hỗ trợ Relation N-N)
+- `user_roles`: Chứa `user_id` và `role_id` - Liên kết những người dùng với vai trò tương ứng của họ.
+- `role_permissions`: Chứa `role_id` và `permission_id` - Liên kết vai trò sẽ bao gồm những quyền hạn nào.
+
+4. CÁC API / CHỨC NĂNG CHÍNH ĐÃ ĐƯỢC XÂY DỰNG
+A. Module Sinh viên (`StudentController` chạy tại đường dẫn `/api/students`):
+- Tính năng: Quản lý toàn bộ vòng đời sinh viên. Cho phép gọi chéo qua giao thức `@CrossOrigin` cho frontend khác domain gọi được.
+- Có đầy đủ các method xử lý RESTful thông thường:
+  + [GET] `/api/students`: Lấy danh sách toàn bộ sinh viên.
+  + [GET] `/api/students/{id}`: Lấy thông tin sinh viên theo UUID khóa chính.
+  + [POST] `/api/students`: Thêm mới sinh viên, sinh viên sẽ tự sinh ID UUID.
+  + [PUT] `/api/students/{id}`: Cập nhật thông tin sinh viên bằng UUID.
+  + [DELETE] `/api/students/{id}`: Xóa sinh viên qua UUID.
+- Tính năng mở rộng:
+  + [GET] `/api/students/search?name=...`: Tìm kiếm sinh viên có tên chứa từ khóa.
+  + Thao tác trực tiếp qua Mã Số Sinh Viên bằng các API: GET, PUT, DELETE trỏ tới đường dẫn `/api/students/code/{studentId}`.
+
+B. Module Người Dùng & Phân Quyền (`UserApiController`, `RoleApiController`, v.v.):
+- [POST] `/api/users`: Tạo một người dùng mới từ tham số truy vấn param (username, password).
+- [POST] `/api/users/{userId}/roles/{roleId}`: Thực hiện gán (Assign) một vai trò (role) cho một tài khoản (user).
+- Các chức năng quản lý Role và RolePermissions tiếp nhận các API để gắn quyền vào vai trò một cách linh động. Tương tự như User. Cấu trúc hiện tại có khai báo phân quyền qua @PreAuthorize tuy nhiên đang được comment lại để dễ test.
+
+5. TỔNG KẾT
+Đây là một hệ thống cung cấp RESTful API đạt tiêu chuẩn dành cho việc Quản lý Hệ thống Đào tạo (có đối tượng sinh viên) và Tích hợp Phân quyền nâng cao (quản lý User -> Role -> Permission linh hoạt). 
+Dự án có tính đóng gói cao, các lớp Database tự động được ORM Hibernate xử lí nên Code Java rất gọn, dễ bảo trì và mở rộng thêm các domain (model) khác về sau.

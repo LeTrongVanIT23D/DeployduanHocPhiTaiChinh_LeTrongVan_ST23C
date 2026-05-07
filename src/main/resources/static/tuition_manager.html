@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học phí & Tài chính - Admin System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-surface-hover: #334155;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --secondary: #3b82f6;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --sidebar-width: 260px;
+            --header-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- Layout --- */
+        .admin-layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 50;
+        }
+
+        .sidebar-brand {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            border-bottom: 1px solid var(--border);
+            gap: 0.75rem;
+        }
+
+        .sidebar-brand i {
+            color: var(--primary);
+            font-size: 1.75rem;
+        }
+
+        .sidebar-menu {
+            padding: 1.5rem 1rem;
+            list-style: none;
+            flex: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-menu a i {
+            font-size: 1.25rem;
+        }
+
+        .sidebar-menu a:hover {
+            background-color: var(--bg-surface-hover);
+            color: var(--text-main);
+        }
+
+        .sidebar-menu li.active a {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+            border-left: 3px solid var(--primary);
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Header --- */
+        .topbar {
+            height: var(--header-height);
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-body);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            width: 300px;
+        }
+
+        .search-box i {
+            color: var(--text-muted);
+            margin-right: 0.5rem;
+        }
+
+        .search-box input {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            outline: none;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .notification {
+            position: relative;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.25rem;
+            transition: color 0.2s;
+        }
+
+        .notification:hover { color: white; }
+        .notification::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background-color: var(--danger);
+            border-radius: 50%;
+            border: 2px solid var(--bg-surface);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+
+        .user-profile img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-profile .info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-profile .name { font-weight: 600; font-size: 0.9rem; }
+        .user-profile .role { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* --- Page Content --- */
+        .content-wrapper {
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* --- KPI Cards --- */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+        }
+
+        .kpi-card.blue::before { background-color: var(--secondary); }
+        .kpi-card.green::before { background-color: var(--primary); }
+        .kpi-card.orange::before { background-color: var(--warning); }
+        .kpi-card.purple::before { background-color: #a855f7; }
+
+        .kpi-title {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .kpi-sub {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .kpi-icon {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            font-size: 2.5rem;
+            opacity: 0.1;
+        }
+
+        /* --- Data Table Section --- */
+        .data-section {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .toolbar {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toolbar-filters {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .filter-select {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            outline: none;
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+        
+        .btn-outline:hover { background-color: var(--bg-surface-hover); }
+
+        .table-responsive {
+            overflow-x: auto;
+            padding: 0 1.5rem 1.5rem 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .currency {
+            font-family: 'Inter', monospace;
+            font-weight: 500;
+        }
+
+        .debt-red { color: var(--danger); font-weight: 600; }
+        .debt-green { color: var(--primary); }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .status-paid { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .status-partial { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .status-debt { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .status-overdue { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.4rem;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+        .action-btn:hover { background-color: var(--bg-body); color: white; }
+        .action-btn.edit:hover { color: var(--secondary); }
+        .action-btn.delete:hover { color: var(--danger); }
+
+        /* --- Modal Popup --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 650px;
+            transform: translateY(-20px) scale(0.95);
+            transition: all 0.3s ease;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close-modal:hover { color: white; }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .form-group.full { grid-column: span 2; }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .form-control {
+            background-color: var(--bg-body);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-footer {
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            background-color: rgba(15, 23, 42, 0.3);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        /* Loading & Toasts */
+        .loader {
+            display: inline-block;
+            width: 1rem; height: 1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        #toast.show { transform: translateY(0); opacity: 1; }
+        .toast-success { background-color: var(--primary); }
+        .toast-error { background-color: var(--danger); }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="ph-fill ph-graduation-cap"></i>
+                <span>UniManager</span>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#"><i class="ph ph-squares-four"></i> Tổng quan</a></li>
+                <li><a href="student_manager.html"><i class="ph ph-users"></i> Quản lý Sinh viên</a></li>
+                <li class="active"><a href="tuition_manager.html"><i class="ph ph-wallet"></i> Học phí & Thanh toán</a></li>
+                <li><a href="#"><i class="ph ph-books"></i> Khung biểu phí</a></li>
+                <li><a href="#"><i class="ph ph-chart-line-up"></i> Báo cáo & Thống kê</a></li>
+                <li style="margin-top: 2rem;"><a href="#"><i class="ph ph-gear"></i> Cài đặt hệ thống</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="topbar">
+                <div class="search-box">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm mã sinh viên, tên...">
+                </div>
+                <div class="topbar-actions">
+                    <i class="ph ph-bell notification"></i>
+                    <div class="user-profile">
+                        <img src="https://i.pravatar.cc/150?img=11" alt="Admin">
+                        <div class="info">
+                            <span class="name">Nguyễn Văn Admin</span>
+                            <span class="role">Phòng Tài chính</span>
+                        </div>
+                        <i class="ph ph-caret-down" style="color: var(--text-muted);"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="content-wrapper">
+                <div class="page-header">
+                    <h1>Học phí & Tài chính</h1>
+                    <p>Quản lý các khoản phải thu, tình trạng đóng học phí và theo dõi công nợ sinh viên.</p>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card blue">
+                        <i class="ph ph-coins kpi-icon"></i>
+                        <span class="kpi-title">Tổng Phải Thu (Dự kiến)</span>
+                        <span class="kpi-value currency" id="kpiExpected">0 ₫</span>
+                        <span class="kpi-sub" style="color: var(--text-muted);"><i class="ph ph-info"></i> Của toàn bộ sinh viên</span>
+                    </div>
+                    <div class="kpi-card green">
+                        <i class="ph ph-wallet kpi-icon"></i>
+                        <span class="kpi-title">Thực Thu (Đã đóng)</span>
+                        <span class="kpi-value currency" id="kpiPaid" style="color: var(--primary);">0 ₫</span>
+                        <span class="kpi-sub" style="color: var(--primary);"><i class="ph ph-trend-up"></i> Cập nhật thời gian thực</span>
+                    </div>
+                    <div class="kpi-card orange">
+                        <i class="ph ph-warning-circle kpi-icon"></i>
+                        <span class="kpi-title">Tổng Công Nợ</span>
+                        <span class="kpi-value currency" id="kpiDebt" style="color: var(--warning);">0 ₫</span>
+                        <span class="kpi-sub" style="color: var(--warning);"><i class="ph ph-warning"></i> Cần đôn đốc nộp</span>
+                    </div>
+                    <div class="kpi-card purple">
+                        <i class="ph ph-chart-pie-slice kpi-icon"></i>
+                        <span class="kpi-title">Tỷ lệ hoàn thành</span>
+                        <span class="kpi-value" id="kpiRate">0%</span>
+                        <span class="kpi-sub" style="color: #a855f7;"><i class="ph ph-check-circle"></i> Đạt chỉ tiêu</span>
+                    </div>
+                </div>
+
+                <!-- Data Table Section -->
+                <div class="data-section">
+                    <div class="toolbar">
+                        <div class="toolbar-filters">
+                            <select class="filter-select" id="statusFilter">
+                                <option value="all">Tất cả trạng thái</option>
+                                <option value="1">Đã đóng</option>
+                                <option value="2">Một phần</option>
+                                <option value="3">Còn nợ</option>
+                                <option value="4">Quá hạn</option>
+                            </select>
+                            <button class="btn btn-outline"><i class="ph ph-funnel"></i> Lọc nâng cao</button>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-outline" onclick="fetchTuitions()"><i class="ph ph-arrows-clockwise"></i> Làm mới</button>
+                            <button class="btn btn-primary" id="openModalBtn"><i class="ph ph-plus"></i> Khởi tạo Học phí</button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã Sinh viên</th>
+                                    <th>Số TC</th>
+                                    <th style="text-align: right;">Tổng học phí</th>
+                                    <th style="text-align: right;">Đã nộp</th>
+                                    <th style="text-align: right;">Còn nợ</th>
+                                    <th style="text-align: center;">Trạng thái</th>
+                                    <th style="text-align: right;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tuitionTableBody">
+                                <!-- Rows injected by JS -->
+                                <tr>
+                                    <td colspan="7" class="empty-state">
+                                        <div class="loader" style="border-color: var(--primary); border-top-color: transparent; width: 24px; height: 24px;"></div>
+                                        <p style="margin-top: 1rem;">Đang đồng bộ dữ liệu...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal-overlay" id="tuitionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle"><i class="ph ph-receipt"></i> Tạo Khóa Học phí Mới</h2>
+                <button class="close-modal" id="closeModalBtn"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="tuitionForm">
+                    <input type="hidden" id="tuitionId">
+                    
+                    <div class="form-group full" style="margin-bottom: 1.5rem;">
+                        <label for="studentId">Mã Sinh viên</label>
+                        <input type="text" id="studentId" class="form-control" placeholder="Nhập mã sinh viên (VD: SV001)" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="totalCredits">Tổng số tín chỉ</label>
+                            <input type="number" id="totalCredits" class="form-control" placeholder="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="status">Trạng thái thanh toán</label>
+                            <select id="status" class="form-control" required>
+                                <option value="1">1 - ĐÃ ĐÓNG</option>
+                                <option value="2">2 - ĐÓNG 1 PHẦN</option>
+                                <option value="3" selected>3 - CÒN NỢ</option>
+                                <option value="4">4 - QUÁ HẠN</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="netAmount">Tổng học phí (VNĐ)</label>
+                            <input type="number" id="netAmount" class="form-control" placeholder="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="deadline">Hạn chót đóng tiền</label>
+                            <input type="date" id="deadline" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="paidAmount">Số tiền đã nộp (VNĐ)</label>
+                            <input type="number" id="paidAmount" class="form-control" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="debtAmount">Số tiền còn nợ (VNĐ)</label>
+                            <input type="number" id="debtAmount" class="form-control" value="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" id="cancelBtn">Hủy bỏ</button>
+                <button type="submit" form="tuitionForm" class="btn btn-primary" id="saveBtn">
+                    <span id="saveBtnText">Lưu dữ liệu</span>
+                    <div class="loader" id="saveLoader" style="display: none; margin-left: 0.5rem;"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">
+        <i class="ph ph-check-circle" style="font-size: 1.25rem;"></i>
+        <span id="toastMessage">Thao tác thành công!</span>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api/tuitions';
+
+        // DOM Elements
+        const form = document.getElementById('tuitionForm');
+        const modal = document.getElementById('tuitionModal');
+        const openModalBtn = document.getElementById('openModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        const tuitionIdInput = document.getElementById('tuitionId');
+        const studentIdInput = document.getElementById('studentId');
+        const totalCreditsInput = document.getElementById('totalCredits');
+        const netAmountInput = document.getElementById('netAmount');
+        const paidAmountInput = document.getElementById('paidAmount');
+        const debtAmountInput = document.getElementById('debtAmount');
+        const statusInput = document.getElementById('status');
+        const deadlineInput = document.getElementById('deadline');
+        
+        const tableBody = document.getElementById('tuitionTableBody');
+        const modalTitle = document.getElementById('modalTitle');
+        const saveBtn = document.getElementById('saveBtn');
+        const saveBtnText = document.getElementById('saveBtnText');
+        const saveLoader = document.getElementById('saveLoader');
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+
+        let isEditMode = false;
+        let tuitionsData = [];
+        let searchTimeout = null;
+
+        // Utilities
+        const formatMoney = (amount) => {
+            if (amount === null || amount === undefined) return '0 ₫';
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        };
+
+        const getStatusBadge = (statusNum) => {
+            switch(parseInt(statusNum)) {
+                case 1: return '<span class="status-badge status-paid"><i class="ph ph-check-circle"></i> ĐÃ ĐÓNG</span>';
+                case 2: return '<span class="status-badge status-partial"><i class="ph ph-chart-pie-slice"></i> MỘT PHẦN</span>';
+                case 3: return '<span class="status-badge status-debt"><i class="ph ph-warning-circle"></i> CÒN NỢ</span>';
+                case 4: return '<span class="status-badge status-overdue"><i class="ph ph-clock-countdown"></i> QUÁ HẠN</span>';
+                default: return '<span class="status-badge status-debt"><i class="ph ph-warning-circle"></i> CÒN NỢ</span>';
+            }
+        };
+
+        // Modal Logic
+        const openModal = (editMode = false) => {
+            modal.classList.add('active');
+            isEditMode = editMode;
+            if(!editMode) {
+                form.reset();
+                tuitionIdInput.value = '';
+                modalTitle.innerHTML = '<i class="ph ph-receipt"></i> Tạo Khóa Học phí Mới';
+                saveBtnText.textContent = 'Lưu dữ liệu';
+                saveBtn.style.backgroundColor = 'var(--primary)';
+            }
+        };
+        const closeModal = () => {
+            modal.classList.remove('active');
+            setTimeout(() => form.reset(), 300);
+        };
+
+        openModalBtn.addEventListener('click', () => openModal(false));
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+
+        // Fetch Data & Calculate KPIs
+        async function fetchTuitions(keyword = '') {
+            try {
+                let url = API_BASE_URL;
+                if (keyword.trim() !== '') {
+                    url = `${API_BASE_URL}/search?keyword=${encodeURIComponent(keyword)}`;
+                }
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Cổng API bị lỗi');
+                tuitionsData = await response.json();
+                
+                // Fetch stats from API instead of local calculation
+                await fetchStatistics();
+                
+                renderTable(tuitionsData);
+            } catch (error) {
+                showToast('Không thể kết nối đến máy chủ API.', 'error');
+                tableBody.innerHTML = '<tr><td colspan="7" class="empty-state" style="color: var(--danger)"><i class="ph ph-warning-circle" style="font-size: 2rem;"></i><p>Kết nối thất bại. Hãy đảm bảo Spring Boot đang chạy ở cổng 8080.</p></td></tr>';
+            }
+        }
+
+        async function fetchStatistics() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/statistics`);
+                if (response.ok) {
+                    const stats = await response.json();
+                    const expected = stats.expected || 0;
+                    const paid = stats.paid || 0;
+                    const debt = stats.debt || 0;
+                    const rate = expected > 0 ? ((paid / expected) * 100).toFixed(1) : 0;
+
+                    document.getElementById('kpiExpected').textContent = formatMoney(expected);
+                    document.getElementById('kpiPaid').textContent = formatMoney(paid);
+                    document.getElementById('kpiDebt').textContent = formatMoney(debt);
+                    document.getElementById('kpiRate').textContent = rate + '%';
+                }
+            } catch(e) {
+                console.log("Could not load stats API", e);
+            }
+        }
+
+        function updateKPIs(data) {
+            // Keep this as fallback if needed, but we use fetchStatistics now
+        }
+
+        // Render Table
+        function renderTable(data) {
+            tableBody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="ph ph-folder-open" style="font-size: 2.5rem; opacity: 0.5;"></i><p style="margin-top: 1rem;">Chưa có dữ liệu học phí.</p></td></tr>';
+                return;
+            }
+
+            data.forEach((t) => {
+                const tr = document.createElement('tr');
+                const debtClass = t.debtAmount > 0 ? 'debt-red' : 'debt-green';
+
+                tr.innerHTML = `
+                    <td style="font-family: monospace; color: var(--primary); font-weight: 600;">${t.studentId || 'N/A'}</td>
+                    <td>${t.totalCredits || 0}</td>
+                    <td class="currency" style="text-align: right;">${formatMoney(t.netAmount)}</td>
+                    <td class="currency" style="text-align: right; color: var(--text-muted);">${formatMoney(t.paidAmount)}</td>
+                    <td class="currency ${debtClass}" style="text-align: right;">${formatMoney(t.debtAmount)}</td>
+                    <td style="text-align: center;">${getStatusBadge(t.status)}</td>
+                    <td style="text-align: right;">
+                        <button onclick='editTuition(${JSON.stringify(t)})' class="action-btn edit" title="Chỉnh sửa"><i class="ph-fill ph-pencil-simple"></i></button>
+                        <button onclick="deleteTuition('${t.id}')" class="action-btn delete" title="Xoá"><i class="ph-fill ph-trash"></i></button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Filter functionality
+        statusFilter.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if(val === 'all') renderTable(tuitionsData);
+            else renderTable(tuitionsData.filter(t => t.status == val));
+        });
+
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const keyword = e.target.value;
+            searchTimeout = setTimeout(() => {
+                fetchTuitions(keyword);
+            }, 500);
+        });
+
+        // Form Submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const payload = {
+                studentId: studentIdInput.value.trim(),
+                totalCredits: parseInt(totalCreditsInput.value),
+                netAmount: parseFloat(netAmountInput.value),
+                paidAmount: parseFloat(paidAmountInput.value || 0),
+                debtAmount: parseFloat(debtAmountInput.value || 0),
+                status: parseInt(statusInput.value),
+                deadline: deadlineInput.value,
+                isActive: true
+            };
+
+            const localId = tuitionIdInput.value;
+            const method = isEditMode ? 'PUT' : 'POST';
+            const url = isEditMode ? `${API_BASE_URL}/${localId}` : API_BASE_URL;
+
+            try {
+                saveLoader.style.display = 'inline-block';
+                saveBtn.disabled = true;
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('Lỗi máy chủ');
+                
+                showToast(isEditMode ? 'Cập nhật thành công!' : 'Tạo mới thành công!');
+                closeModal();
+                fetchTuitions();
+            } catch (error) {
+                showToast('Thao tác thất bại. Vui lòng thử lại.', 'error');
+            } finally {
+                saveLoader.style.display = 'none';
+                saveBtn.disabled = false;
+            }
+        });
+
+        // Setup Edit
+        window.editTuition = (t) => {
+            openModal(true);
+            tuitionIdInput.value = t.id;
+            studentIdInput.value = t.studentId || '';
+            totalCreditsInput.value = t.totalCredits || 0;
+            netAmountInput.value = t.netAmount || 0;
+            paidAmountInput.value = t.paidAmount || 0;
+            debtAmountInput.value = t.debtAmount || 0;
+            statusInput.value = t.status || 3;
+            if (t.deadline) deadlineInput.value = t.deadline.substring(0,10);
+
+            modalTitle.innerHTML = '<i class="ph ph-pencil-line"></i> Cập nhật Học phí';
+            saveBtnText.textContent = 'Lưu thay đổi';
+            saveBtn.style.backgroundColor = 'var(--warning)';
+        };
+
+        // Complete Delete Action
+        window.deleteTuition = async (id) => {
+            if (confirm('Bạn có chắc chắn muốn xoá bản ghi này? Hệ thống không thể hoàn tác!')) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/${id}`, { method: 'DELETE' });
+                    if (!response.ok) throw new Error('Xóa thất bại');
+                    
+                    showToast('Đã xóa thành công.');
+                    fetchTuitions();
+                } catch (error) {
+                    showToast('Lỗi: Không thể xoá.', 'error');
+                }
+            }
+        };
+
+        // Toast Notification
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = msg;
+            
+            toast.className = '';
+            toast.classList.add(type === 'success' ? 'toast-success' : 'toast-error');
+            toast.children[0].className = type === 'success' ? 'ph ph-check-circle' : 'ph ph-x-circle';
+            
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // Init App On Load
+        document.addEventListener('DOMContentLoaded', fetchTuitions);
+    </script>
+</body>
+</html>
