@@ -48,6 +48,11 @@ E. Các Bảng Trung Gian (Hỗ trợ Relation N-N)
 - `user_roles`: Chứa `user_id` và `role_id` - Liên kết những người dùng với vai trò tương ứng của họ.
 - `role_permissions`: Chứa `role_id` và `permission_id` - Liên kết vai trò sẽ bao gồm những quyền hạn nào.
 
+F. Quản lý Học phí và Tài chính
+- `student_tuition`: Quản lý thông tin học phí của sinh viên (khóa chính UUID, chứa `student_code`, `total_credits`, `net_amount`, `paid_amount`, `debt_amount`, `status`).
+- `payments`: Quản lý các giao dịch thanh toán học phí (khóa chính UUID, chứa `tuition_id`, `amount_paid`, `payment_method`, `payment_status`).
+- `tuition_fees`: Quản lý khung biểu phí tín chỉ (khóa chính UUID, chứa `price_per_credit`, `base_tuition`).
+
 4. CÁC API / CHỨC NĂNG CHÍNH ĐÃ ĐƯỢC XÂY DỰNG
 A. Module Sinh viên (`StudentController` chạy tại đường dẫn `/api/students`):
 - Tính năng: Quản lý toàn bộ vòng đời sinh viên. Cho phép gọi chéo qua giao thức `@CrossOrigin` cho frontend khác domain gọi được.
@@ -65,6 +70,18 @@ B. Module Người Dùng & Phân Quyền (`UserApiController`, `RoleApiControlle
 - [POST] `/api/users`: Tạo một người dùng mới từ tham số truy vấn param (username, password).
 - [POST] `/api/users/{userId}/roles/{roleId}`: Thực hiện gán (Assign) một vai trò (role) cho một tài khoản (user).
 - Các chức năng quản lý Role và RolePermissions tiếp nhận các API để gắn quyền vào vai trò một cách linh động. Tương tự như User. Cấu trúc hiện tại có khai báo phân quyền qua @PreAuthorize tuy nhiên đang được comment lại để dễ test.
+
+C. Module Học phí & Tài chính (`TuitionController` chạy tại đường dẫn `/api`):
+- Tính năng: Quản lý học phí, thu nợ và tình trạng thanh toán của sinh viên.
+- Các API chính:
+  + [GET] `/api/tuitions`: Lấy danh sách toàn bộ học phí.
+  + [GET] `/api/tuitions/statistics`: Lấy thông tin thống kê tổng thu, thực thu và công nợ.
+  + [GET] `/api/tuitions/search?keyword=...`: Tìm kiếm học phí sinh viên theo mã sinh viên.
+  + [POST] `/api/tuitions`: Thêm mới thông tin học phí sinh viên.
+  + [PUT] `/api/tuitions/{id}`: Cập nhật thông tin học phí.
+  + [DELETE] `/api/tuitions/{id}`: Xóa bản ghi học phí.
+  + [GET] `/api/payments`: Lấy danh sách các giao dịch thanh toán.
+  + [POST] `/api/payments`: Tạo giao dịch thanh toán mới.
 
 5. TỔNG KẾT
 Đây là một hệ thống cung cấp RESTful API đạt tiêu chuẩn dành cho việc Quản lý Hệ thống Đào tạo (có đối tượng sinh viên) và Tích hợp Phân quyền nâng cao (quản lý User -> Role -> Permission linh hoạt). 
