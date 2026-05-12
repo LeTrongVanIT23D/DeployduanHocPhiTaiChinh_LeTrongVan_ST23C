@@ -901,6 +901,42 @@
       })
       .catch(error => console.error('Error fetching dashboard stats:', error));
   });
+  // Handle sidebar navigation via IFrame to prevent page reload
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebarLinks = document.querySelectorAll('.nav-sidebar a.nav-link');
+    const contentWrapper = document.querySelector('.content-wrapper');
+    const originalContent = contentWrapper.innerHTML;
+
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        
+        // Update active class
+        sidebarLinks.forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+
+        // If it's the dashboard (index.html or #), restore original content
+        if (href === 'index.html' || href === '#' || href === '') {
+          e.preventDefault();
+          contentWrapper.innerHTML = originalContent;
+          contentWrapper.style.padding = "";
+          return;
+        }
+
+        // If it's an external page like student_manager.html or tuition_manager.html
+        if (href && href.endsWith('.html')) {
+          e.preventDefault();
+          contentWrapper.innerHTML = `
+            <iframe 
+              src="${href}" 
+              style="width: 100%; height: calc(100vh - 57px); border: none; display: block;" 
+              title="Content Area">
+            </iframe>
+          `;
+        }
+      });
+    });
+  });
 </script>
 </body>
 </html>

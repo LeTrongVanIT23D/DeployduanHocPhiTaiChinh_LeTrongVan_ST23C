@@ -1,0 +1,12 @@
+USE schoolmanagerxyz; -- Thay bằng tên database thực tế của bạn nếu khác
+GO
+
+INSERT INTO students (id, student_id, name, email) 
+VALUES (NEWID(), 'SV099', N'Nguyễn Văn Trí', 'vantri@school.edu');
+# them nhieu sinh vien 1 luc
+INSERT INTO students (id, student_id, name, email) 
+VALUES 
+    (NEWID(), 'SV100', N'Lê Thị Lan', 'lanle@school.edu'),
+    (NEWID(), 'SV101', N'Trần Minh Hoàng', 'hoangtm@school.edu'),
+    (NEWID(), 'SV102', N'Phạm Quang Hải', 'haipq@school.edu');
+SELECT * FROM students;

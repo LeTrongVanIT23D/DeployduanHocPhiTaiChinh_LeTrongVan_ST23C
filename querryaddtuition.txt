@@ -1,0 +1,30 @@
+Câu lệnh Query mẫu thêm 1 bản ghi Học phí:
+USE schoolmanagerxyz;
+GO
+
+INSERT INTO student_tuition (
+    id, student_code, total_credits, 
+    net_amount, paid_amount, debt_amount, 
+    status, deadline, is_active, created_at
+) 
+VALUES (
+    NEWID(), 'SV099', 15, 
+    5000000.00, 0.00, 5000000.00, 
+    3, '2026-12-31', 1, GETDATE()
+);
+Câu lệnh Query mẫu thêm nhiều bản ghi cùng lúc:
+INSERT INTO student_tuition (
+    id, student_code, total_credits, net_amount, paid_amount, debt_amount, status, deadline, is_active, created_at
+) 
+VALUES 
+    -- SV100: Nợ 100% (5 triệu)
+    (NEWID(), 'SV100', 15, 5000000.00, 0.00, 5000000.00, 3, '2026-12-31', 1, GETDATE()),
+    
+    -- SV101: Đã đóng 1 phần (Đóng 2 triệu, nợ 3 triệu)
+    (NEWID(), 'SV101', 15, 5000000.00, 2000000.00, 3000000.00, 2, '2026-12-31', 1, GETDATE()),
+    
+    -- SV102: Đã đóng đủ (Đóng 5 triệu, nợ 0đ)
+    (NEWID(), 'SV102', 15, 5000000.00, 5000000.00, 0.00, 1, '2026-12-31', 1, GETDATE());
+
+-- Xem lại kết quả vừa chèn
+SELECT * FROM student_tuition;

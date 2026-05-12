@@ -106,9 +106,57 @@ public class TuitionController {
         return paymentRepository.findAll();
     }
 
+    @GetMapping("/tuitions/{id}/payments")
+    public ResponseEntity<List<Payment>> getPaymentsByTuitionId(@PathVariable UUID id) {
+        if (!studentTuitionRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        List<Payment> payments = paymentRepository.findByTuitionIdOrderByPaymentDateDesc(id);
+        return ResponseEntity.ok(payments);
+    }
+
     @PostMapping("/payments")
-    public Payment createPayment(@RequestBody Payment payment) {
-        return paymentRepository.save(payment);
+    public ResponseEntity<?> createPayment(@RequestBody Payment payment) {
+        if (payment.getTuitionId() == null) {
+            return ResponseEntity.badRequest().body("Tuition ID is required");
+        }
+        
+        Optional<StudentTuition> tuitionOpt = studentTuitionRepository.findById(payment.getTuitionId());
+        if (!tuitionOpt.isPresent()) {
+            return ResponseEntity.badRequest().body("Tuition not found");
+        }
+        
+        StudentTuition tuition = tuitionOpt.get();
+        
+        // Save the payment
+        payment.setPaymentDate(java.time.LocalDateTime.now());
+        payment.setPaymentStatus("SUCCESS");
+        Payment savedPayment = paymentRepository.save(payment);
+        
+        // Update the tuition record
+        BigDecimal currentPaid = tuition.getPaidAmount() != null ? tuition.getPaidAmount() : BigDecimal.ZERO;
+        BigDecimal newPaid = currentPaid.add(payment.getAmountPaid());
+        tuition.setPaidAmount(newPaid);
+        
+        BigDecimal netAmount = tuition.getNetAmount() != null ? tuition.getNetAmount() : BigDecimal.ZERO;
+        BigDecimal newDebt = netAmount.subtract(newPaid);
+        if (newDebt.compareTo(BigDecimal.ZERO) < 0) {
+            newDebt = BigDecimal.ZERO;
+        }
+        tuition.setDebtAmount(newDebt);
+        
+        // Update status
+        if (newPaid.compareTo(netAmount) >= 0) {
+            tuition.setStatus((short) 1); // PAID
+        } else if (newPaid.compareTo(BigDecimal.ZERO) > 0) {
+            tuition.setStatus((short) 2); // PARTIAL
+        } else {
+            tuition.setStatus((short) 3); // DEBT
+        }
+        
+        studentTuitionRepository.save(tuition);
+        
+        return ResponseEntity.ok(savedPayment);
     }
 
     // --- Tuition Fees Endpoints ---
