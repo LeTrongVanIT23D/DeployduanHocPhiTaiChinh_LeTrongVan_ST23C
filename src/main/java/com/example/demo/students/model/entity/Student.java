@@ -9,11 +9,8 @@ import org.hibernate.annotations.UuidGenerator;
 @Table(name = "students")
 public class Student {
     @Id
-    @GeneratedValue
-    @UuidGenerator   // Hibernate 6+
-    @Column(columnDefinition = "UNIQUEIDENTIFIER",
-            updatable = false,
-            nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
     @Column(length = 100)

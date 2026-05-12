@@ -20,11 +20,8 @@ import jakarta.persistence.JoinColumn;
 @Table(name = "roles")
 public class Role {
     @Id
-    @GeneratedValue
-    @UuidGenerator   // Hibernate 6+
-    @Column(columnDefinition = "UNIQUEIDENTIFIER",
-            updatable = false,
-            nullable = false)
+    @GeneratedValue(strategy = jakarta.persistence.GenerationType.UUID)
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
     private String code;
