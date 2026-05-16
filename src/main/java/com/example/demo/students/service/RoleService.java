@@ -31,4 +31,8 @@ public class RoleService {
         r.getPermissions().add(p);
         return roleRepo.save(r);
     }
+
+    public java.util.List<Role> findAll() {
+        return roleRepo.findAll();
+    }
 }

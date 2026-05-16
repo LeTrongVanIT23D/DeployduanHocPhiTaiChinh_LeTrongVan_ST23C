@@ -13,8 +13,9 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     
-    @Column(name = "tuition_id")
-    private UUID tuitionId;
+    @ManyToOne
+    @JoinColumn(name = "tuition_id")
+    private StudentTuition studentTuition;
     
     @Column(name = "amount_paid", precision = 15, scale = 2)
     private BigDecimal amountPaid;
@@ -61,8 +62,8 @@ public class Payment {
     // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
-    public UUID getTuitionId() { return tuitionId; }
-    public void setTuitionId(UUID tuitionId) { this.tuitionId = tuitionId; }
+    public StudentTuition getStudentTuition() { return studentTuition; }
+    public void setStudentTuition(StudentTuition studentTuition) { this.studentTuition = studentTuition; }
     public BigDecimal getAmountPaid() { return amountPaid; }
     public void setAmountPaid(BigDecimal amountPaid) { this.amountPaid = amountPaid; }
     public LocalDateTime getPaymentDate() { return paymentDate; }

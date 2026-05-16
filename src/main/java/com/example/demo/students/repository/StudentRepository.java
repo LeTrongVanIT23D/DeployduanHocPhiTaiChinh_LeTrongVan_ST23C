@@ -9,11 +9,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.demo.students.model.entity.Student;
 
 public interface StudentRepository extends JpaRepository<Student, UUID> {
-    List<Student> findByNameContainingIgnoreCase(String name);
+    List<Student> findByFullNameContainingIgnoreCase(String name);
     
-    Optional<Student> findByStudentId(String studentId);
+    Optional<Student> findByCode(String code);
     
     @Transactional
-    void deleteByStudentId(String studentId);
+    void deleteByCode(String code);
 }
 

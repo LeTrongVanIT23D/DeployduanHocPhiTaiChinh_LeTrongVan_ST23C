@@ -30,6 +30,15 @@ public class UserApiController {
         return userService.createUser(username, password);
     }
 
+    @PostMapping("/create-with-details")
+    public User createWithDetails(@org.springframework.web.bind.annotation.RequestBody User user) {
+        User newUser = userService.createUser(user.getUsername(), user.getPassword());
+        newUser.setFullName(user.getFullName());
+        newUser.setEmail(user.getEmail());
+        newUser.setPhone(user.getPhone());
+        return userService.updateProfile(newUser.getId(), newUser);
+    }
+
     // @PreAuthorize("hasAuthority('USER_MANAGE')")
     @PostMapping("/{userId}/roles/{roleId}")
     public User assignRole(@PathVariable UUID userId,
@@ -41,5 +50,20 @@ public class UserApiController {
     @GetMapping
     public List<User> list() {
         return userService.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable UUID id) {
+        return userService.getUserById(id);
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/{id}")
+    public User updateProfile(@PathVariable UUID id, @org.springframework.web.bind.annotation.RequestBody User updatedUser) {
+        return userService.updateProfile(id, updatedUser);
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/{userId}/roles/{roleId}")
+    public User removeRole(@PathVariable UUID userId, @PathVariable UUID roleId) {
+        return userService.removeRole(userId, roleId);
     }
 }

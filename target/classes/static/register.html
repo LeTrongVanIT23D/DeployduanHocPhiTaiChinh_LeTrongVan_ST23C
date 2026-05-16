@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng ký Tài khoản Sinh viên</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/dist/css/adminlte.min.css">
+</head>
+<body class="hold-transition register-page">
+<div class="register-box">
+  <div class="card card-outline card-primary">
+    <div class="card-header text-center">
+      <a href="#" class="h1"><b>Education</b>Manager</a>
+    </div>
+    <div class="card-body">
+      <p class="login-box-msg">Đăng ký tài khoản Sinh viên mới</p>
+
+      <form id="registerForm">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" id="fullName" placeholder="Họ và Tên" required>
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-user"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" id="username" placeholder="Tên đăng nhập (Mã SV)" required>
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-id-badge"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="email" class="form-control" id="email" placeholder="Email" required>
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-envelope"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" id="password" placeholder="Mật khẩu" required>
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div id="errorAlert" class="alert alert-danger" style="display: none; padding: 0.5rem; font-size: 0.9rem;">
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary btn-block" id="registerBtn">Đăng ký</button>
+          </div>
+        </div>
+      </form>
+
+      <a href="login.html" class="text-center d-block mt-3">Tôi đã có tài khoản, quay lại Đăng nhập</a>
+    </div>
+    <!-- /.form-box -->
+  </div><!-- /.card -->
+</div>
+<!-- /.register-box -->
+
+<!-- jQuery -->
+<script src="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/dist/js/adminlte.min.js"></script>
+
+<script>
+  // Nếu đã login thì chuyển hướng thẳng về index
+  if (localStorage.getItem('user')) {
+    window.location.href = 'index.html';
+  }
+
+  document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('registerBtn');
+    const alertBox = document.getElementById('errorAlert');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+    alertBox.style.display = 'none';
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: document.getElementById('fullName').value,
+          username: document.getElementById('username').value,
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Đăng ký thất bại');
+      }
+
+      alert("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
+      window.location.href = 'login.html';
+    } catch (err) {
+      alertBox.style.display = 'block';
+      alertBox.textContent = err.message;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Đăng ký';
+    }
+  });
+</script>
+</body>
+</html>

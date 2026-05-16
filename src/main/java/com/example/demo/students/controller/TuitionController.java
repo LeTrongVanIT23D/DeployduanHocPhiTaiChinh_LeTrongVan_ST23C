@@ -6,6 +6,8 @@ import com.example.demo.students.model.entity.TuitionFee;
 import com.example.demo.students.repository.PaymentRepository;
 import com.example.demo.students.repository.StudentTuitionRepository;
 import com.example.demo.students.repository.TuitionFeeRepository;
+import com.example.demo.students.repository.StudentRepository;
+import com.example.demo.students.model.entity.Student;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api")
@@ -27,10 +30,27 @@ public class TuitionController {
     private StudentTuitionRepository studentTuitionRepository;
 
     @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
     private PaymentRepository paymentRepository;
 
     @Autowired
     private TuitionFeeRepository tuitionFeeRepository;
+
+    public static class TuitionDTO {
+        public String studentId;
+        public String studentCode;
+        public UUID semesterId;
+        public Integer totalCredits;
+        public BigDecimal rawAmount;
+        public BigDecimal netAmount;
+        public BigDecimal paidAmount;
+        public BigDecimal debtAmount;
+        public Short status;
+        public LocalDate deadline;
+        public Boolean isActive;
+    }
 
     // --- Student Tuition Endpoints ---
     @GetMapping("/tuitions")
@@ -43,7 +63,7 @@ public class TuitionController {
         if (keyword == null || keyword.trim().isEmpty()) {
             return studentTuitionRepository.findAll();
         }
-        return studentTuitionRepository.findByStudentIdContainingIgnoreCase(keyword.trim());
+        return studentTuitionRepository.findByStudent_CodeContainingIgnoreCase(keyword.trim());
     }
 
     @GetMapping("/tuitions/statistics")
@@ -68,24 +88,48 @@ public class TuitionController {
     }
 
     @PostMapping("/tuitions")
-    public StudentTuition createTuition(@RequestBody StudentTuition tuition) {
-        return studentTuitionRepository.save(tuition);
+    public ResponseEntity<?> createTuition(@RequestBody TuitionDTO dto) {
+        String code = dto.studentCode != null ? dto.studentCode : dto.studentId;
+        Optional<Student> studentOpt = studentRepository.findByCode(code);
+        if (!studentOpt.isPresent()) {
+            return ResponseEntity.badRequest().body("Student not found: " + code);
+        }
+        
+        StudentTuition tuition = new StudentTuition();
+        tuition.setStudent(studentOpt.get());
+        tuition.setSemesterId(dto.semesterId);
+        tuition.setTotalCredits(dto.totalCredits);
+        tuition.setRawAmount(dto.rawAmount);
+        tuition.setNetAmount(dto.netAmount);
+        tuition.setPaidAmount(dto.paidAmount);
+        tuition.setDebtAmount(dto.debtAmount);
+        tuition.setStatus(dto.status);
+        tuition.setDeadline(dto.deadline);
+        tuition.setIsActive(dto.isActive);
+        
+        return ResponseEntity.ok(studentTuitionRepository.save(tuition));
     }
 
     @PutMapping("/tuitions/{id}")
-    public ResponseEntity<StudentTuition> updateTuition(@PathVariable UUID id, @RequestBody StudentTuition updatedTuition) {
+    public ResponseEntity<?> updateTuition(@PathVariable UUID id, @RequestBody TuitionDTO dto) {
         return studentTuitionRepository.findById(id)
                 .map(tuition -> {
-                    tuition.setStudentId(updatedTuition.getStudentId());
-                    tuition.setSemesterId(updatedTuition.getSemesterId());
-                    tuition.setTotalCredits(updatedTuition.getTotalCredits());
-                    tuition.setRawAmount(updatedTuition.getRawAmount());
-                    tuition.setNetAmount(updatedTuition.getNetAmount());
-                    tuition.setPaidAmount(updatedTuition.getPaidAmount());
-                    tuition.setDebtAmount(updatedTuition.getDebtAmount());
-                    tuition.setStatus(updatedTuition.getStatus());
-                    tuition.setDeadline(updatedTuition.getDeadline());
-                    tuition.setIsActive(updatedTuition.getIsActive());
+                    String code = dto.studentCode != null ? dto.studentCode : dto.studentId;
+                    Optional<Student> studentOpt = studentRepository.findByCode(code);
+                    if (studentOpt.isPresent()) {
+                        tuition.setStudent(studentOpt.get());
+                    } else {
+                        throw new IllegalArgumentException("Student not found: " + code);
+                    }
+                    tuition.setSemesterId(dto.semesterId);
+                    tuition.setTotalCredits(dto.totalCredits);
+                    tuition.setRawAmount(dto.rawAmount);
+                    tuition.setNetAmount(dto.netAmount);
+                    tuition.setPaidAmount(dto.paidAmount);
+                    tuition.setDebtAmount(dto.debtAmount);
+                    tuition.setStatus(dto.status);
+                    tuition.setDeadline(dto.deadline);
+                    tuition.setIsActive(dto.isActive);
                     return ResponseEntity.ok(studentTuitionRepository.save(tuition));
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -111,26 +155,42 @@ public class TuitionController {
         if (!studentTuitionRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        List<Payment> payments = paymentRepository.findByTuitionIdOrderByPaymentDateDesc(id);
+        List<Payment> payments = paymentRepository.findByStudentTuition_IdOrderByPaymentDateDesc(id);
         return ResponseEntity.ok(payments);
     }
 
+    public static class PaymentDTO {
+        public UUID tuitionId;
+        public StudentTuition studentTuition;
+        public BigDecimal amountPaid;
+        public Short paymentMethod;
+        public String paymentStatus;
+        public String notes;
+    }
+
     @PostMapping("/payments")
-    public ResponseEntity<?> createPayment(@RequestBody Payment payment) {
-        if (payment.getTuitionId() == null) {
+    public ResponseEntity<?> createPayment(@RequestBody PaymentDTO dto) {
+        UUID tId = dto.tuitionId != null ? dto.tuitionId : (dto.studentTuition != null ? dto.studentTuition.getId() : null);
+        if (tId == null) {
             return ResponseEntity.badRequest().body("Tuition ID is required");
         }
         
-        Optional<StudentTuition> tuitionOpt = studentTuitionRepository.findById(payment.getTuitionId());
+        Optional<StudentTuition> tuitionOpt = studentTuitionRepository.findById(tId);
         if (!tuitionOpt.isPresent()) {
             return ResponseEntity.badRequest().body("Tuition not found");
         }
         
         StudentTuition tuition = tuitionOpt.get();
         
+        Payment payment = new Payment();
+        payment.setStudentTuition(tuition);
+        payment.setAmountPaid(dto.amountPaid);
+        payment.setPaymentMethod(dto.paymentMethod);
+        payment.setPaymentStatus(dto.paymentStatus != null ? dto.paymentStatus : "SUCCESS");
+        payment.setNotes(dto.notes);
+        
         // Save the payment
         payment.setPaymentDate(java.time.LocalDateTime.now());
-        payment.setPaymentStatus("SUCCESS");
         Payment savedPayment = paymentRepository.save(payment);
         
         // Update the tuition record

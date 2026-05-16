@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập Quản trị viên & Giảng viên</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/dist/css/adminlte.min.css">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+  <!-- /.login-logo -->
+  <div class="card card-outline card-primary">
+    <div class="card-header text-center">
+      <a href="#" class="h1"><b>Education</b>Manager</a>
+    </div>
+    <div class="card-body">
+      <p class="login-box-msg">Đăng nhập Quản trị viên & Giảng viên</p>
+
+      <form id="loginForm">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" id="username" placeholder="Tên đăng nhập" required>
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-user"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" id="password" placeholder="Mật khẩu" required>
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div id="errorAlert" class="alert alert-danger" style="display: none; padding: 0.5rem; font-size: 0.9rem;">
+          Sai tên đăng nhập hoặc mật khẩu!
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Đăng nhập</button>
+          </div>
+          <!-- /.col -->
+        </div>
+      </form>
+
+      <p class="mb-0 mt-3 text-center">
+        Bạn là Sinh viên? <a href="login.html" class="text-center">Đăng nhập tại đây</a>
+      </p>
+    </div>
+    <!-- /.card-body -->
+  </div>
+  <!-- /.card -->
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/dist/js/adminlte.min.js"></script>
+
+<script>
+  // Nếu đã login thì chuyển hướng thẳng về index
+  if (localStorage.getItem('user')) {
+    window.location.href = 'index.html';
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    const alertBox = document.getElementById('errorAlert');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+    alertBox.style.display = 'none';
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Đăng nhập thất bại');
+      }
+
+      const data = await response.json();
+      const roles = data.roles || [];
+      if (!roles.includes('SUPER_ADMIN') && !roles.includes('TEACHER')) {
+          throw new Error('Tài khoản không có quyền truy cập trang này!');
+      }
+
+      // Lưu thông tin người dùng vào localStorage
+      localStorage.setItem('user', JSON.stringify(data));
+      
+      // Redirect
+      window.location.href = 'index.html';
+    } catch (err) {
+      alertBox.style.display = 'block';
+      alertBox.textContent = err.message || 'Sai tên đăng nhập hoặc mật khẩu!';
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Đăng nhập';
+    }
+  });
+</script>
+</body>
+</html>

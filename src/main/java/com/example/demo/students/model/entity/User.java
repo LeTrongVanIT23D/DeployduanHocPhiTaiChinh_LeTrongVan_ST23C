@@ -11,22 +11,38 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(updatable = false, nullable = false)
     private UUID id;
 
+    @Column(name = "username", length = 100, unique = true)
     private String username;
+
+    @Column(name = "password", length = 255)
     private String password;
-    private String status;
+
+    @Column(name = "full_name", length = 100)
+    private String fullName;
+
+    @Column(name = "email", length = 100)
+    private String email;
+
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    @Column(name = "avatar_url", length = 255)
+    private String avatarUrl;
+
+    @Column(name = "last_login_at")
+    private java.time.LocalDateTime lastLoginAt;
 
     public User() {}
 
-    public User(String username, String password, String status) {
+    public User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.status = status;
     }
 
     // ===== Getter Setter =====
@@ -39,8 +55,20 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    public java.time.LocalDateTime getLastLoginAt() { return lastLoginAt; }
+    public void setLastLoginAt(java.time.LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

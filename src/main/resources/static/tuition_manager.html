@@ -394,7 +394,7 @@
             const debtClass = t.debtAmount > 0 ? 'text-danger' : 'text-success';
 
             tr.innerHTML = `
-                <td class="text-primary font-weight-bold">${t.studentId || 'N/A'}</td>
+                <td class="text-primary font-weight-bold">${t.student ? t.student.studentId : 'N/A'}</td>
                 <td>${t.totalCredits || 0}</td>
                 <td class="currency text-right">${formatMoney(t.netAmount)}</td>
                 <td class="currency text-right text-muted">${formatMoney(t.paidAmount)}</td>
@@ -435,7 +435,7 @@
     window.editTuition = (t) => {
         isEditMode = true;
         document.getElementById('tuitionId').value = t.id;
-        document.getElementById('studentId').value = t.studentId || '';
+        document.getElementById('studentId').value = t.student ? t.student.studentId : '';
         document.getElementById('totalCredits').value = t.totalCredits || 0;
         document.getElementById('netAmount').value = t.netAmount || 0;
         document.getElementById('paidAmount').value = t.paidAmount || 0;
@@ -450,7 +450,7 @@
     document.getElementById('tuitionForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const payload = {
-            studentId: document.getElementById('studentId').value.trim(),
+            studentCode: document.getElementById('studentId').value.trim(),
             totalCredits: parseInt(document.getElementById('totalCredits').value),
             netAmount: parseFloat(document.getElementById('netAmount').value),
             paidAmount: parseFloat(document.getElementById('paidAmount').value || 0),
@@ -471,12 +471,15 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (!response.ok) throw new Error('Failed');
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Lỗi xử lý từ máy chủ');
+            }
             showToast(isEditMode ? 'Cập nhật thành công!' : 'Tạo mới thành công!');
             $('#tuitionModal').modal('hide');
             fetchTuitions();
         } catch (error) {
-            showToast('Lỗi máy chủ.', 'error');
+            showToast(error.message, 'error');
         } finally {
             document.getElementById('saveBtn').disabled = false;
         }
@@ -500,7 +503,7 @@
         if (t.debtAmount <= 0) return;
         document.getElementById('paymentForm').reset();
         document.getElementById('payTuitionId').value = t.id;
-        document.getElementById('payStudentId').textContent = t.studentId;
+        document.getElementById('payStudentId').textContent = t.student ? t.student.studentId : 'N/A';
         document.getElementById('payDebt').textContent = formatMoney(t.debtAmount);
         document.getElementById('payAmount').value = t.debtAmount;
         document.getElementById('payAmount').max = t.debtAmount;
@@ -510,7 +513,7 @@
     document.getElementById('paymentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const payload = {
-            tuitionId: document.getElementById('payTuitionId').value,
+            studentTuition: { id: document.getElementById('payTuitionId').value },
             amountPaid: parseFloat(document.getElementById('payAmount').value),
             paymentMethod: parseInt(document.getElementById('payMethod').value),
             notes: document.getElementById('payNotes').value
@@ -523,7 +526,10 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (!response.ok) throw new Error('Thanh toán thất bại');
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Thanh toán thất bại');
+            }
             showToast('Thanh toán thành công!');
             $('#paymentModal').modal('hide');
             fetchTuitions();

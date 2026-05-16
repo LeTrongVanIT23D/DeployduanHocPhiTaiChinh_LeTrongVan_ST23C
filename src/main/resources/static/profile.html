@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Hồ sơ</title>
+  <link rel="stylesheet" href="css/modern.css">
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.classList.add('iframe-mode');
+    });
+  </script>
+</head>
+<body>
+  <div class="container p-4">
+    <h2 class="page-title">Hồ sơ cá nhân</h2>
+    
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+      <div class="card-header">Thông tin Cá nhân</div>
+      <form id="profileForm">
+        <div class="card-body">
+          <div class="form-group">
+            <label for="username">Tên đăng nhập (Mã SV / Mã GV)</label>
+            <input type="text" class="form-control" id="username" readonly>
+          </div>
+          <div class="form-group">
+            <label for="roles">Vai trò (Quyền hạn)</label>
+            <input type="text" class="form-control" id="roles" readonly>
+          </div>
+          <div class="form-group">
+            <label for="fullName">Họ và Tên</label>
+            <input type="text" class="form-control" id="fullName" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Số điện thoại</label>
+            <input type="text" class="form-control" id="phone">
+          </div>
+          <div class="form-group">
+            <label for="password">Đổi Mật khẩu (Bỏ trống nếu không đổi)</label>
+            <input type="password" class="form-control" id="password" placeholder="Mật khẩu mới">
+          </div>
+        </div>
+        <div class="card-footer">
+          <button type="submit" class="btn btn-primary" id="btnUpdateProfile">Cập nhật thông tin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+      window.top.location.href = 'login.html';
+      return;
+    }
+    const currentUser = JSON.parse(userStr);
+
+    fetch(`/api/users/${currentUser.id}`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('username').value = data.username || '';
+        document.getElementById('fullName').value = data.fullName || '';
+        document.getElementById('email').value = data.email || '';
+        document.getElementById('phone').value = data.phone || '';
+        
+        let roleNames = '';
+        if(data.roles && data.roles.length > 0) {
+          if(typeof data.roles[0] === 'string') {
+            roleNames = data.roles.join(', ');
+          } else {
+            roleNames = data.roles.map(r => r.name || r.code).join(', ');
+          }
+        }
+        document.getElementById('roles').value = roleNames;
+      })
+      .catch(err => {
+        console.error('Lỗi khi tải thông tin cá nhân', err);
+        alert('Không thể tải thông tin cá nhân!');
+      });
+
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const updatedUser = {
+        fullName: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        password: document.getElementById('password').value || null
+      };
+
+      const btn = document.getElementById('btnUpdateProfile');
+      btn.disabled = true;
+      btn.innerText = 'Đang xử lý...';
+
+      fetch(`/api/users/${currentUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedUser)
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Cập nhật thất bại');
+        return res.json();
+      })
+      .then(data => {
+        alert('Cập nhật thông tin thành công!');
+        currentUser.fullName = data.fullName;
+        localStorage.setItem('user', JSON.stringify(currentUser));
+        if(window.top.document.getElementById('displayUsername')) {
+            window.top.document.getElementById('displayUsername').innerText = data.fullName || data.username;
+            window.top.document.getElementById('userInitials').innerText = (data.fullName || data.username || 'U').charAt(0).toUpperCase();
+        }
+        document.getElementById('password').value = '';
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Lỗi khi cập nhật thông tin!');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerText = 'Cập nhật thông tin';
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -5,14 +5,16 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "role_permissions")
-@IdClass(RolePermissionId.class)
-public class RolePermission {
+public class RolePermission extends BaseEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(updatable = false, nullable = false)
+    private UUID id;
+
     @Column(name = "role_id")
     private UUID roleId;
 
-    @Id
     @Column(name = "permission_id")
     private UUID permissionId;
 
@@ -23,10 +25,12 @@ public class RolePermission {
     }
 
     // ===== Getter Setter =====
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+
     public UUID getRoleId() { return roleId; }
     public void setRoleId(UUID roleId) { this.roleId = roleId; }
 
     public UUID getPermissionId() { return permissionId; }
     public void setPermissionId(UUID permissionId) { this.permissionId = permissionId; }
-
 }

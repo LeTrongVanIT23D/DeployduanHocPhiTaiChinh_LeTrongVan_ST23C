@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "student_tuition")
@@ -14,14 +15,16 @@ public class StudentTuition {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     
-    @Column(name = "student_code", length = 50)
-    private String studentId;
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private Student student;
     
     @Column(name = "semester_id")
     private UUID semesterId;
     
-    @Column(name = "tuition_fee_id")
-    private UUID tuitionFeeId;
+    @ManyToOne
+    @JoinColumn(name = "tuition_fee_id")
+    private TuitionFee tuitionFee;
     
     @Column(name = "total_credits")
     private Integer totalCredits;
@@ -74,12 +77,18 @@ public class StudentTuition {
     // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
-    public String getStudentId() { return studentId; }
-    public void setStudentId(String studentId) { this.studentId = studentId; }
+    public Student getStudent() { return student; }
+    public void setStudent(Student student) { this.student = student; }
+
+    @JsonProperty("studentId")
+    public String getStudentId() {
+        return student != null ? student.getStudentId() : null;
+    }
+
     public UUID getSemesterId() { return semesterId; }
     public void setSemesterId(UUID semesterId) { this.semesterId = semesterId; }
-    public UUID getTuitionFeeId() { return tuitionFeeId; }
-    public void setTuitionFeeId(UUID tuitionFeeId) { this.tuitionFeeId = tuitionFeeId; }
+    public TuitionFee getTuitionFee() { return tuitionFee; }
+    public void setTuitionFee(TuitionFee tuitionFee) { this.tuitionFee = tuitionFee; }
     public Integer getTotalCredits() { return totalCredits; }
     public void setTotalCredits(Integer totalCredits) { this.totalCredits = totalCredits; }
     public BigDecimal getRawAmount() { return rawAmount; }

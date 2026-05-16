@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="css/modern.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.classList.add('iframe-mode');
+    });
+  </script>
+</head>
+<body>
+  <div class="container p-4">
+    <h2 class="page-title">Bảng điều khiển</h2>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+      <div class="glass-panel p-4 text-center">
+        <i class="fas fa-users text-primary mb-2" style="font-size: 2.5rem;"></i>
+        <h3 id="stat-students" style="font-size: 1.5rem; margin-top: 8px;">0</h3>
+        <p class="text-muted mt-1">Tổng Sinh viên</p>
+      </div>
+      <div class="glass-panel p-4 text-center">
+        <i class="fas fa-file-invoice-dollar text-success mb-2" style="font-size: 2.5rem;"></i>
+        <h3 id="stat-tuition" style="font-size: 1.5rem; margin-top: 8px;">0</h3>
+        <p class="text-muted mt-1">Học phí thu được</p>
+      </div>
+      <div class="glass-panel p-4 text-center">
+        <i class="fas fa-book text-warning mb-2" style="font-size: 2.5rem;"></i>
+        <h3 id="stat-courses" style="font-size: 1.5rem; margin-top: 8px;">0</h3>
+        <p class="text-muted mt-1">Học phần</p>
+      </div>
+      <div class="glass-panel p-4 text-center">
+        <i class="fas fa-user-tie text-danger mb-2" style="font-size: 2.5rem;"></i>
+        <h3 id="stat-teachers" style="font-size: 1.5rem; margin-top: 8px;">0</h3>
+        <p class="text-muted mt-1">Giảng viên</p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">Chào mừng bạn trở lại</div>
+      <div class="card-body">
+        <p>Hệ thống Quản lý Đào tạo đã được cập nhật giao diện mới theo phong cách Glassmorphism & Modern UI.</p>
+        <p class="text-muted mt-2">Chọn các chức năng bên menu trái để bắt đầu làm việc. Các chức năng hiển thị dựa trên quyền hạn của bạn.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

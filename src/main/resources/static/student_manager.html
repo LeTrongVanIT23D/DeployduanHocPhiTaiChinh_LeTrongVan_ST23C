@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Management Dashboard</title>
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/plugins/fontawesome-free/css/all.min.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/dist/css/adminlte.min.css">
+    <title>Quản lý Sinh viên</title>
+    <link rel="stylesheet" href="css/modern.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .loader {
             display: none;
@@ -31,10 +27,10 @@
             bottom: 2rem;
             right: 2rem;
             padding: 1rem 1.5rem;
-            border-radius: 4px;
+            border-radius: 8px;
             color: white;
             font-weight: 500;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
             transform: translateY(100px);
             opacity: 0;
             transition: all 0.4s ease;
@@ -42,141 +38,116 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            backdrop-filter: blur(12px);
         }
         #toast.show {
             transform: translateY(0);
             opacity: 1;
         }
-        .toast-success { background-color: #28a745; }
-        .toast-error { background-color: #dc3545; }
+        .toast-success { border-left: 4px solid var(--success); }
+        .toast-error { border-left: 4px solid var(--danger); }
         
         .action-btn {
-            background: none;
-            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--surface-border);
+            border-radius: 6px;
             cursor: pointer;
-            padding: 0.2rem 0.5rem;
-            color: #6c757d;
-            transition: color 0.2s;
+            padding: 6px 10px;
+            color: var(--text-muted);
+            transition: all 0.2s;
         }
-        .action-btn:hover { color: #495057; }
-        .btn-edit:hover { color: #007bff; }
-        .btn-delete:hover { color: #dc3545; }
+        .action-btn:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-main); }
+        .btn-edit:hover { color: var(--primary); border-color: var(--primary); }
+        .btn-delete:hover { color: var(--danger); border-color: var(--danger); }
     </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('iframe-mode');
+      });
+    </script>
 </head>
-<body class="hold-transition sidebar-mini">
-<div class="wrapper" style="background: #f4f6f9; min-height: 100vh;">
-    <!-- Content Header (Page header) -->
-    <div class="content-header dashboard-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1 class="m-0">Quản lý Sinh viên</h1>
+<body>
+  <div class="container p-4">
+    <h2 class="page-title">Quản lý Sinh viên</h2>
+
+    <div class="grid md:grid-cols-3 gap-4">
+      <!-- Left col (Form) -->
+      <div class="md:col-span-1">
+        <div class="card" id="formCard">
+          <div class="card-header" id="formTitle">
+            <span class="flex items-center gap-2"><i class="fas fa-user-plus text-primary"></i> Thêm Sinh viên mới</span>
           </div>
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
-              <li class="breadcrumb-item active">Sinh viên</li>
-            </ol>
+          <form id="studentForm">
+            <input type="hidden" id="internalId">
+            <div class="card-body">
+              <div class="form-group">
+                <label for="studentId">Mã SV</label>
+                <input type="text" class="form-control" id="studentId" placeholder="VD: SV001" required>
+              </div>
+              <div class="form-group">
+                <label for="name">Họ và Tên</label>
+                <input type="text" class="form-control" id="name" placeholder="VD: Nguyễn Văn A" required>
+              </div>
+              <div class="form-group">
+                <label for="email">Địa chỉ Email</label>
+                <input type="email" class="form-control" id="email" placeholder="name@school.edu" required>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button type="button" class="btn" style="display: none;" id="cancelBtn">Hủy bỏ</button>
+              <button type="submit" class="btn btn-primary" id="saveBtn">
+                <span id="saveBtnText">Lưu dữ liệu</span>
+                <div class="loader" id="saveLoader"></div>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Right col (Table) -->
+      <div class="md:col-span-2" style="grid-column: span 2;">
+        <div class="card">
+          <div class="card-header flex justify-between items-center">
+            <span class="flex items-center gap-2"><i class="fas fa-users text-primary"></i> Danh sách Sinh viên</span>
+            <span class="badge badge-success">Trực tiếp</span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="modern-table">
+                <thead>
+                  <tr>
+                    <th>Mã SV</th>
+                    <th>Họ và Tên</th>
+                    <th>Email</th>
+                    <th class="text-right">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="studentTableBody">
+                  <!-- Student rows injected by JS -->
+                </tbody>
+              </table>
+            </div>
+            <div id="loadingMessage" class="text-center p-4 text-muted">
+                <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                <p>Đang tải dữ liệu...</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Main content -->
-    <section class="content">
-      <div class="container-fluid">
-        <div class="row">
-          <!-- Left col (Form) -->
-          <div class="col-md-4">
-            <div class="card card-primary">
-              <div class="card-header">
-                <h3 class="card-title" id="formTitle"><i class="fas fa-user-plus mr-1"></i> Thêm Sinh viên mới</h3>
-              </div>
-              <!-- /.card-header -->
-              <!-- form start -->
-              <form id="studentForm">
-                <input type="hidden" id="internalId">
-                <div class="card-body">
-                  <div class="form-group">
-                    <label for="studentId">Mã SV</label>
-                    <input type="text" class="form-control" id="studentId" placeholder="VD: SV001" required>
-                  </div>
-                  <div class="form-group">
-                    <label for="name">Họ và Tên</label>
-                    <input type="text" class="form-control" id="name" placeholder="VD: Nguyễn Văn A" required>
-                  </div>
-                  <div class="form-group">
-                    <label for="email">Địa chỉ Email</label>
-                    <input type="email" class="form-control" id="email" placeholder="name@school.edu" required>
-                  </div>
-                </div>
-                <!-- /.card-body -->
-
-                <div class="card-footer">
-                  <button type="submit" class="btn btn-primary" id="saveBtn">
-                    <span id="saveBtnText">Lưu dữ liệu</span>
-                    <div class="loader" id="saveLoader" style="display: none;"></div>
-                  </button>
-                  <button type="button" class="btn btn-default float-right" style="display: none;" id="cancelBtn">Hủy bỏ</button>
-                </div>
-              </form>
-            </div>
-          </div>
-          
-          <!-- Right col (Table) -->
-          <div class="col-md-8">
-            <div class="card card-outline card-primary">
-              <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-users mr-1"></i> Danh sách Sinh viên</h3>
-                <div class="card-tools">
-                    <span class="badge badge-success"><i class="fas fa-sync-alt"></i> Trực tiếp</span>
-                </div>
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body table-responsive p-0">
-                <table class="table table-hover text-nowrap">
-                  <thead>
-                    <tr>
-                      <th>Mã SV</th>
-                      <th>Họ và Tên</th>
-                      <th>Email</th>
-                      <th class="text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody id="studentTableBody">
-                    <!-- Student rows injected by JS -->
-                  </tbody>
-                </table>
-                <div id="loadingMessage" class="text-center p-4 text-muted">
-                    <i class="fas fa-spinner fa-spin fa-2x"></i>
-                    <p class="mt-2">Đang tải dữ liệu...</p>
-                </div>
-              </div>
-              <!-- /.card-body -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-</div>
-
-<!-- Toast Notification -->
-<div id="toast">
-    <i class="fas fa-check-circle fa-lg"></i>
-    <span id="toastMessage">Thao tác thành công!</span>
-</div>
-
-<!-- jQuery -->
-<script src="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="https://cdn.jsdelivr.net/gh/ColorlibHQ/AdminLTE@3.2.0/dist/js/adminlte.min.js"></script>
+  <!-- Toast Notification -->
+  <div id="toast">
+      <i id="toastIcon" class="fas fa-check-circle fa-lg"></i>
+      <span id="toastMessage">Thao tác thành công!</span>
+  </div>
 
 <script>
     const API_BASE_URL = '/api/students';
 
-    // DOM Elements
     const form = document.getElementById('studentForm');
     const internalIdInput = document.getElementById('internalId');
     const studentIdInput = document.getElementById('studentId');
@@ -188,14 +159,14 @@
     const saveBtnText = document.getElementById('saveBtnText');
     const cancelBtn = document.getElementById('cancelBtn');
     const loadingMessage = document.getElementById('loadingMessage');
+    const formCard = document.getElementById('formCard');
 
     let isEditMode = false;
 
-    // Fetch & render data on UI load
     async function fetchStudents() {
         try {
             const response = await fetch(API_BASE_URL);
-            if (!response.ok) throw new Error('Failed to load proxy');
+            if (!response.ok) throw new Error('Failed to load API');
             const students = await response.json();
             renderTable(students);
         } catch (error) {
@@ -204,7 +175,6 @@
         }
     }
 
-    // Render Table
     function renderTable(students) {
         loadingMessage.style.display = 'none';
         tableBody.innerHTML = '';
@@ -233,10 +203,8 @@
         });
     }
 
-    // Handle Add/Update Form Submit
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const studentData = {
             studentId: studentIdInput.value.trim(),
             name: nameInput.value.trim(),
@@ -270,7 +238,6 @@
         }
     });
 
-    // Setup Edit Mode
     window.editStudent = (student) => {
         isEditMode = true;
         internalIdInput.value = student.id;
@@ -278,12 +245,8 @@
         nameInput.value = student.name;
         emailInput.value = student.email;
 
-        formTitle.innerHTML = '<i class="fas fa-edit mr-1"></i> Cập nhật Sinh viên';
+        formTitle.innerHTML = '<span class="flex items-center gap-2"><i class="fas fa-edit text-warning"></i> Cập nhật Sinh viên</span>';
         saveBtnText.textContent = 'Lưu thay đổi';
-        
-        const cardHeader = formTitle.closest('.card');
-        cardHeader.classList.remove('card-primary');
-        cardHeader.classList.add('card-warning');
         
         saveBtn.classList.remove('btn-primary');
         saveBtn.classList.add('btn-warning');
@@ -292,7 +255,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Complete Delete Action
     window.deleteStudent = async (id) => {
         if (confirm('Bạn có chắc chắn muốn xóa sinh viên này?')) {
             try {
@@ -307,33 +269,33 @@
         }
     };
 
-    // Reset the form state
     cancelBtn.addEventListener('click', resetForm);
 
     function resetForm() {
         form.reset();
         isEditMode = false;
         internalIdInput.value = '';
-        formTitle.innerHTML = '<i class="fas fa-user-plus mr-1"></i> Thêm Sinh viên mới';
+        formTitle.innerHTML = '<span class="flex items-center gap-2"><i class="fas fa-user-plus text-primary"></i> Thêm Sinh viên mới</span>';
         saveBtnText.textContent = 'Lưu dữ liệu';
-        
-        const cardHeader = formTitle.closest('.card');
-        cardHeader.classList.add('card-primary');
-        cardHeader.classList.remove('card-warning');
         
         saveBtn.classList.add('btn-primary');
         saveBtn.classList.remove('btn-warning');
         cancelBtn.style.display = 'none';
     }
 
-    // Show fancy toast notification
     function showToast(msg, type = 'success') {
         const toast = document.getElementById('toast');
+        const icon = document.getElementById('toastIcon');
         document.getElementById('toastMessage').innerText = msg;
         
         toast.className = '';
-        toast.classList.add(type === 'success' ? 'toast-success' : 'toast-error');
-        toast.children[0].className = type === 'success' ? 'fas fa-check-circle fa-lg' : 'fas fa-times-circle fa-lg';
+        if (type === 'success') {
+            toast.classList.add('toast-success');
+            icon.className = 'fas fa-check-circle fa-lg text-success';
+        } else {
+            toast.classList.add('toast-error');
+            icon.className = 'fas fa-times-circle fa-lg text-danger';
+        }
         
         toast.classList.add('show');
         
@@ -342,17 +304,6 @@
         }, 3500);
     }
 
-    // Hide header if loaded inside an iframe
-    if (window.self !== window.top) {
-        const header = document.querySelector('.dashboard-header');
-        if (header) header.style.display = 'none';
-        
-        // Remove padding from wrapper to fit perfectly in iframe
-        const wrapper = document.querySelector('.wrapper');
-        if (wrapper) wrapper.style.background = 'transparent';
-    }
-
-    // Init App On Load
     fetchStudents();
 </script>
 </body>

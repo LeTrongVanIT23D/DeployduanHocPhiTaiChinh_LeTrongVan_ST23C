@@ -1,0 +1,9 @@
+----Tài khoản Super_admin
+username: user09
+password: hash123
+----Tài khoản giảng viên:
+username: user07
+password: hash123
+----Tài khoản sinh viên:
+username: user01
+password: hash123

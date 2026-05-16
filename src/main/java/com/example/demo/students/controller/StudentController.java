@@ -19,7 +19,7 @@ import com.example.demo.students.service.StudentService;
 
 @RestController
 @RequestMapping("/api/students")
-@CrossOrigin // cho phép frontend gọi
+@CrossOrigin(origins = "*") // cho phép frontend gọi
 public class StudentController {
 
     private final StudentService service;
@@ -62,7 +62,7 @@ public class StudentController {
     // SEARCH BY NAME
     @GetMapping("/search")
     public List<Student> search(@RequestParam String name) {
-        return service.search(name);
+        return service.searchByName(name);
     }
 
     // GET BY STUDENT ID (Mã SV)

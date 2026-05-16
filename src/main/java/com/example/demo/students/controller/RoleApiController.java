@@ -32,4 +32,9 @@ public class RoleApiController {
                               @PathVariable UUID permId) {
         return roleService.addPermission(roleId, permId);
     }
+
+    @org.springframework.web.bind.annotation.GetMapping
+    public java.util.List<Role> listRoles() {
+        return roleService.findAll();
+    }
 }

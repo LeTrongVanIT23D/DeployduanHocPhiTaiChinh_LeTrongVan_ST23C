@@ -33,6 +33,7 @@ public class StudentService {
 
         old.setName(student.getName());
         old.setEmail(student.getEmail());
+        old.setStudentId(student.getStudentId());
 
         return repo.save(old);
     }
@@ -41,12 +42,12 @@ public class StudentService {
         repo.deleteById(id);
     }
 
-    public List<Student> search(String name) {
-        return repo.findByNameContainingIgnoreCase(name);
+    public List<Student> searchByName(String name) {
+        return repo.findByFullNameContainingIgnoreCase(name);
     }
 
     public Student getByStudentId(String studentId) {
-        return repo.findByStudentId(studentId).orElse(null);
+        return repo.findByCode(studentId).orElse(null);
     }
 
     public Student updateByStudentId(String studentId, Student student) {
@@ -55,11 +56,12 @@ public class StudentService {
 
         old.setName(student.getName());
         old.setEmail(student.getEmail());
+        old.setStudentId(student.getStudentId());
 
         return repo.save(old);
     }
 
     public void deleteByStudentId(String studentId) {
-        repo.deleteByStudentId(studentId);
+        repo.deleteByCode(studentId);
     }
 }

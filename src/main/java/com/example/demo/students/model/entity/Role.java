@@ -18,14 +18,23 @@ import jakarta.persistence.JoinColumn;
 
 @Entity
 @Table(name = "roles")
-public class Role {
+public class Role extends BaseEntity {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.UUID)
     @Column(updatable = false, nullable = false)
     private UUID id;
 
+    @Column(name = "code", length = 100)
     private String code;
+
+    @Column(name = "name", length = 255)
     private String name;
+
+    @Column(name = "description", length = 255)
+    private String description;
+
+    @Column(name = "is_system")
+    private Boolean isSystem;
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
@@ -35,6 +44,12 @@ public class Role {
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public Boolean getIsSystem() { return isSystem; }
+    public void setIsSystem(Boolean isSystem) { this.isSystem = isSystem; }
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

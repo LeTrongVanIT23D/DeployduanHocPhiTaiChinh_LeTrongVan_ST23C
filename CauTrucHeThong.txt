@@ -1,0 +1,43 @@
+Task List: Education Management System JPA Schema
+ Giai đoạn 1: Base Framework & Auditing
+
+ Cấu hình Spring Data JPA Auditing (EnableJpaAuditing)
+ Tạo BaseEntity
+ Cập nhật User, Role, RolePermission, Permission
+ Tạo mới: UserRole
+ Giai đoạn 2: Cơ cấu Tổ chức & Nhân sự
+
+ Tạo: Department
+ Tạo: Position
+ Tạo: Employee
+ Tạo: EmployeePosition
+ Giai đoạn 3: Chương trình & Môn học
+
+ Tạo: Major
+ Tạo: TrainingProgram
+ Tạo: Course
+ Tạo: TrainingProgramCourse
+ Giai đoạn 4: Danh mục Đào tạo & Quản lý Sinh viên
+
+ Tạo: AcademicYear, SchoolYear, Semester
+ Tạo: StudentClass, AdvisorClasseSection, StudentStatus
+ Cập nhật: Student
+ Tạo: StudentClasseSection
+ Giai đoạn 5: Lớp học phần & Đăng ký môn
+
+ Tạo: CourseSection, LecturerCourseClass, StudentCourseSection
+ Tạo: RegistrationPeriod, CourseRegistration, EquivalentCourse
+ Giai đoạn 6: Lịch học, Phòng học
+
+ Tạo: Building, Floor, Room
+ Tạo: Schedule, TimeSlot
+ Giai đoạn 7: Khảo thí & Điểm thi
+
+ Tạo: GradeScale, GradeComponent
+ Tạo: StudentGrade, Exam, ExamRoom
+ Tạo: StudentExamRoom, ExamProctor
+ Giai đoạn 8: Tốt nghiệp & Hệ thống
+
+ Tạo: GraduationCondition, GraduationResult
+ Tạo: Notification, UserNotification, SystemLog, SystemSetting
+ Tạo: EmailTemplate, EmailAttachment, EmailGroup, EmailQueue, SmtpConfig, EmailLog
